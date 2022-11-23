@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body style="margin:0;padding: 50px;">
+    <h1>WELCOME TO THE PUBLIC LIBRARY</h1>
+    <div id="welcom">
+        <a id="reg" onclick="reg()">register</a><br>
+        <a id="sign" onclick="sigin()">sign in</a>
+    </div>
+    <div id="sec_body"></div>
+
+
+
+    <!-- 
+    <h2>register</h2>
+    name<input id="nm" type="text"><br>
+    password<input id="pwd" type="text"><br>
+    <button onclick="add_user(nm.value,pwd.value)">register</button> -->
+
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const MYSERVER = 'http://127.0.0.1:5000/'
+       
+
+        check_start = () => {
+            axios.get(MYSERVER,{withCredentials:true})  .then(function (response) {
+                    console.log(response.data)
+
+                })
+        }
+        // const axios = require('axios');
+
+        check_start()
+        reg = () => {
+
+            sec_body.innerHTML =
+                `
+    <h2>register</h2>
+    name<input id="nm" type="text"><br>
+    password<input id="pwd" type="text"><br>
+    <button onclick="add_user(nm.value,pwd.value)" >register</button>
+
+                                `
+
+        }
+        add_user = (nm, pwd) => {
+            console.log(nm, pwd)
+
+            axios.post(MYSERVER, {
+                user: nm,
+                password: pwd,
+                action: 'addusr'
+            })
+                .then(function (response) {
+                    if (response.data == 'useradded') { sigin(); }
+
+                })
+
+
+
+        }
+
+
+        sigin = () => {
+            sec_body.innerHTML = ` <h2>sign in</h2>
+                                <input id="nm" type="text" placeholder="Enter Username" name="uname" required>
+                                <input id="pwd" type="password" placeholder="Enter Password" name="psw" required>
+                                <br><button onclick="sign_in()" >sign in</button>`}
+        
+        
+        sign_in = async () => {
+
+            await axios.post(MYSERVER, {
+                user: nm.value,
+                password: pwd.value,
+                action: 'check'
+            },)
+                .then(function (response) {
+                    if (response.data == 'admin') { window.location.href = 'admin.html' }
+                    if (response.data == 'exists') { window.location.href = 'user.html' }
+                    if (response.data == 'doesnt') { alert('user doesnt exists') }
+                    console.log(response.data)
+
+                })
+
+        }
+    </script>
+
+</body>
+
+</html>

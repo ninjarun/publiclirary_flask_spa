@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Library</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <!------------------------------------------------------------------------------ NAVBAR ----------------------------------------------------------------------------------------------------------->
+    <nav style="position:fixed; width:100%;" class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">PublicLibrary</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="http://127.0.0.1:5500/projfront/index.html">Home</a></li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Customers
+                        <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a onclick="add_customer_menu()">Add New Customer</a></li>
+                        <li><a onclick="find_customer_menu()">Find Customer By Name</a></li>
+                        <li><a onclick="display_customers()">Display All Customers</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Books
+                        <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a onclick="add_book_menu()">Add A New Book</a></li>
+                        <li><a onclick="find_book_menu()">Find Book by Name</a></li>
+                        <li><a onclick="display_book()">Display All Books</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Loans
+                        <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a onclick="loan_menu()">Create A New Loan</a></li>
+                        <li><a onclick="late_loans()">Display Late Loans</a></li>
+                        <li><a onclick="display_all_loans()">Display All Loans</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <form action="{{url_for('core.index')}}" method="POST">
+                        <input type="submit" value="Add Dummy Data">
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <!----------------------------------------------------------------------- END NAVBAR ----------------------------------------------------------------------------------------------------------->
+
+
+    <!---------------------------------------------------------------------  MAIN DISPLAY DIV ----------------------------------------------------------------------------------------------------------->
+    <div style="display:inline-flex; width: 100%;">
+        <div id="body_main" style="width:70%; padding:65px;"></div>
+        <!-- <div id="cart" style="width:30%; padding:20px; background-color: bisque;"></div> -->
+    </div>
+    <!--------------------------------------------------------------------- END MAIN DISPLAY DIV ----------------------------------------------------------------------------------------------------------->
+
+
+    <script>
+        const MYSERVER = 'https://latelibrary.onrender.com/'
+
+
+        // <!-------------------------------------------------------------  CUSTOMER FUNCTIONS ----------------------------------------------------------------------------------------------------------->
+        function add_customer_menu() {
+            body_main.innerHTML = `name:<input id="nm" type="text">
+                                    age:<input id="age" type="text">
+                                    city:<input id="ct" type="text">   
+                                    <button onclick="add_customer()">add customer to db</button>         `
+        }
+
+        const add_customer = async () => {
+            let res = await fetch(`${MYSERVER}addcustomer/`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    nm: nm.value,
+                    age: age.value,
+                    ct: ct.value
+                }),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            })
+                .then(body_main.innerHTML += `<h5>"user added succesfully!"</h5>`)
+
+        }
+
+
+        function load_customer_data(res) {
+            let outputtable = `
+            <table class="table">
+                    <thead>
+                        <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>City</th>
+                        </tr>
+                    </thead>`
+            outputtable += res.map((i) =>
+                `
+                    <tr class="table-primary">
+                        <td>${i['id']}</td>
+                        <td>${i['name']}</td>
+                        <td>${i['age']}</td>
+                        <td>${i['city']}</td>
+                        <td>
+                            <button onclick="delete_customer(${i.id})">delete customer</button>
+                        </td>
+                    </tr>
+             `
+            ).join('')
+            outputtable += `</table>`
+            return outputtable
+
+        }
+
+        const display_customers = async () => {
+            let res = await fetch(`${MYSERVER}displayall/`).then((response) => response.json())
+            body_main.innerHTML = load_customer_data(res)
+        };
+
+        function find_customer_menu() {
+            body_main.innerHTML = `name:<input id="nm" type="text">  
+                                    <button onclick="find_customer()">find customer</button>             `
+        }
+        ////////////find customer func
+        const find_customer = async () => {
+            let res = await fetch(`${MYSERVER}findcustomer/`, {
+                method: "POST",
+                body: JSON.stringify({
+                    nm: nm.value
+                }),
+                headers: { 'Content-type': 'application/json; charset=UTF-8' }
+            }).then((response) => response.json())
+            body_main.innerHTML = load_customer_data(res)
+        }
+
+        const delete_customer = async (id) => {
+            res = await fetch(`${MYSERVER}findcustomer/${id}`,
+                { method: 'DELETE' })
+                .then((response) => console.log(response))
+
+            body_main.innerHTML = display_customers()
+        }
+        // <!----------------------------------------------------------------- END CUSTOMER FUNCTIONS ----------------------------------------------------------------------------------------------------------->
+
+        // <!-----------------------------------------------------------------  BOOKS FUNCTIONS ----------------------------------------------------------------------------------------------------------->
+        function add_book_menu() {
+            body_main.innerHTML = `name:<input id="nm" type="text">
+                                    age:<input id="auth" type="text">
+                                    city:<input id="year" type="text">   
+                                    type:<input id="type" type="text">   
+                                    <button onclick="add_book()">add book to db</button>         `
+        }
+
+        const add_book = async () => {
+            let res = await fetch(`${MYSERVER}addbook/`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    nm: nm.value,
+                    auth: auth.value,
+                    year: year.value,
+                    type: type.value
+                }),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            }).then((response) => response.json())
+                .then((json) => console.log(json));
+            body_main.innerHTML += `<h5>"user added succesfully!"</h5>`
+
+        }
+
+
+        function load_book_data(res) {
+            console.log(res)
+            let outputtable = `
+            <table class="table">
+                    <thead>
+                        <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Auth</th>
+                        <th>Year</th>
+                        <th>type</th>
+                        </tr>
+                    </thead>`
+            outputtable += res.map((i) =>
+                `
+                    <tr class="table-primary">
+                        <td>${i['id']}</td>
+                        <td>${i['name']}</td>
+                        <td>${i['author']}</td>
+                        <td>${i['year']}</td>
+                        <td>${i['type']}</td>
+                        <td>
+                            <button onclick="delete_book(${i.id})">delete book</button>
+                        </td>
+                    </tr>
+             `
+            ).join('')
+            outputtable += `</table>`
+            return outputtable
+
+        }
+
+        const display_book = async () => {
+            let res = await fetch(`${MYSERVER}displayallbooks/`)
+                .then((response) => response.json())
+            body_main.innerHTML = load_book_data(res)
+        };
+
+        function find_book_menu() {
+            body_main.innerHTML = `name:<input id="nm" type="text">  
+                                    <button onclick="find_book()">find book</button>             `
+        }
+        const find_book = async () => {
+            let res = await fetch(`${MYSERVER}findbook/`, {
+                method: "POST",
+                body: JSON.stringify({
+                    nm: nm.value
+                }),
+                headers: { 'Content-type': 'application/json; charset=UTF-8' }
+            }).then((response) => response.json())
+            body_main.innerHTML = load_book_data(res)
+        }
+
+        const delete_book = async (id) => {
+            res = await fetch(`${MYSERVER}findbook/${id}`,
+                { method: 'DELETE' })
+                .then((response) => console.log(response))
+
+            body_main.innerHTML = display_book()
+        }
+
+
+
+        // <!----------------------------------------------------------------- END BOOKS FUNCTIONS ----------------------------------------------------------------------------------------------------------->
+
+        // <!----------------------------------------------------------------- LOANS FUNCTIONS ----------------------------------------------------------------------------------------------------------->
+        const loan_menu = async () => {
+            res = await fetch(`${MYSERVER}newloan/`)
+                .then((response) => response.json())
+                .then((json) => load_lending_options(json))
+        }
+        load_lending_options = (res) => {
+            console.log(res['books'])
+
+
+            output = `choose customer to lend to:
+                    <input id="cust_field" list = "customers" required >
+                    <datalist id="customers">`
+
+            output += res['customers'].map((i) =>
+                `<option value="${i['id']}">${i['name']}</option> `).join(" ")
+
+            output += `</datalist>
+            
+`
+
+
+            output += `<br><br>
+                    choose book to lend to:
+                    <input id="book_field" list = "books" required >
+                    <datalist id="books">`
+
+            output += res['books'].map((i) =>
+                `<option value="${i['id']}">${i['name']}</option> `).join(" ")
+
+            output += `</datalist>
+             <button onclick="add_loan(book_field.value,cust_field.value)">add loan</button>
+            `
+            body_main.innerHTML = output
+        }
+
+        const add_loan = async (a, b) => {
+            console.log(a, b)
+            let res = await fetch(`${MYSERVER}newloan/`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    customer: a,
+                    book: b,
+                }),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            }).then((response) => console.log(response))
+            // body_main.innerHTML += `<h5>"user added succesfully!"</h5>`
+
+        }
+
+        load_loan_data = (res, address) => {
+            let outputtable = `
+            <table id="mtable" class="table">
+                    <thead>
+                        <tr>
+                        <th>ID</th>
+                        <th>Customer Name</th>
+                        <th>Book Name</th>
+                        <th>Loan Date</th>
+                        <th>Return Date</th>
+                        </tr>
+                    </thead>`
+            outputtable += res.map((i) =>
+                `
+                    <tr class="table-primary">
+                        <td>${i['id']}</td>
+                        <td>${i['customer']}</td>
+                        <td>${i['book']}</td>
+                        <td>${i['loandate']}</td>
+                        <td>${i['returndate']}</td>
+                        <td>
+                            <button onclick="return_loan(${i.id},${address})">return book</button>
+                        </td>
+                    </tr>
+             `
+            ).join('')
+            outputtable += `</table>
+            <button onclick="change()">change color</button>`
+            return outputtable
+
+        }
+
+        
+
+        function change(){
+            document.getElementById("mtable").style.color = "blue";
+
+
+        }
+
+        const display_all_loans = async () => {
+            await fetch(`${MYSERVER}displayallloans/`)
+                .then((response) => response.json())
+                .then((response) => body_main.innerHTML = load_loan_data(response, "display_all_loans()"))
+        };
+
+        const return_loan = async (id, address) => {
+            res = await fetch(`${MYSERVER}displayallloans/${id}`,
+                { method: 'DELETE' })
+                .then((response) => address)
+        }
+
+        const late_loans = async () => {
+            await fetch(`${MYSERVER}lateloans/`)
+                .then((response) => response.json())
+                .then((response) => body_main.innerHTML = load_loan_data(response, "late_loans()"))
+        };
+
+// <!----------------------------------------------------------------- END LOANS FUNCTIONS ----------------------------------------------------------------------------------------------------------->
+
+    </script>
+    <div id="footer"></div>
+    <footer style="bottom: 0; position: fixed;" class="bg-light text-center text-lg-start">
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+            PublicLibrary - Yoni Oren
+        </div>
+    </footer>
+</body>
+
+</html>
