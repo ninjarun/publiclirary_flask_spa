@@ -1,11 +1,12 @@
 import json
-
+from flask_cors import CORS
 from flask import Blueprint, Flask, render_template, request
 from publiclibrary import db
 from publiclibrary.core.util import del_func
 from publiclibrary.customers.models import Customers
 
-customers= Blueprint('customers',__name__,template_folder="templates")
+customers= Blueprint('customers',__name__,template_folder="templates") 
+CORS(customers)
 
 ##############################################################################
 ##################### start of customer functions ###########################
