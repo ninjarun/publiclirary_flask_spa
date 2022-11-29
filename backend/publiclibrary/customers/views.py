@@ -38,6 +38,7 @@ def display_all(ind=-1):
     list=[]
     for cust in Customers.query.all():
         list.append({"id":cust.id,"name":cust.name,"age":cust.age,"city":cust.city})
+    print(list)
     return list
 ##############################################################################
 ######################### end of customer functions ##########################
