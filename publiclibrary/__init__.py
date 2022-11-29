@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+cors = CORS(app, resources={r'/api/*':{'origins':'*'}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db_library.sqlite3'
 app.config['SECRET_KEY'] = "random_string"
 
