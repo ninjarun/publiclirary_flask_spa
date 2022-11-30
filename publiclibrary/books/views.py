@@ -17,7 +17,8 @@ def add_book():
             newBook=Books(new_book['nm'], new_book['auth'], new_book['year'], new_book['type'])
             db.session.add(newBook)
             db.session.commit()
-    return ['success']
+            return 'success'
+    return 'nothing'
 
 @books.route("/findbook/", methods=['POST','GET'])
 @books.route("/findbook/<ind>", methods=['DELETE','GET'])
